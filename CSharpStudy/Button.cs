@@ -1,6 +1,6 @@
 ﻿class Button
 {
-    static int pressableCount = 5;
+    public static int pressableCount = 5;
 
     public readonly int positionX;
     public readonly int positionY;

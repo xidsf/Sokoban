@@ -5,8 +5,8 @@
     public readonly int positionX;
     public readonly int positionY;
 
-    public bool isInPlayer = false;
-    public bool isHidden = false;
+    public bool isInPlayer;
+    public bool isHidden;
     public readonly bool isbreakable;
 
     public string Icon = "□";

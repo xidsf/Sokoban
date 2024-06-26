@@ -32,6 +32,14 @@
     private static void MakeStage(string stage)
     {
         Block.breakableBlockCount = 0;
+        if(currentStage == 3)
+        {
+            Button.pressableCount = 10;
+        }
+        else
+        {
+            Button.pressableCount = 5;
+        }
         int blockCount = 0;
         int boxCount = 0;
         int goalCount = 0;
