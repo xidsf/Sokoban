@@ -4,8 +4,8 @@
     public static Box[] box;
     public static Block[] block;
     public static Goal[] goal;
-    public static Item item;
-    public static Button button;
+    public static Item[] item;
+    public static Button[] button;
 
     static void Main(string[] args)
     {
@@ -14,49 +14,53 @@
         while (true)
         {
             Render();
-            ConsoleKey key = Input();
-            Direction inputDir;
 
-            if(key != ConsoleKey.R)
-            {
-                inputDir = ConvertToDirection(key);
-            }
-            else
+            ConsoleKey key = Input();
+            
+            if(key == ConsoleKey.R)
             {
                 StageManager.ResetStage();
                 continue;
             }
+            
+            Direction inputDir = ConvertKeyToDirection(key);
 
-            Action<Direction>? pushOutUnits;
+
+            Action<Direction> moveAction;
 
             player.Move(inputDir);
-            if(ObjectManager.TryGetInteractedBoxIndex(player, box, out int interactedBoxIndex))
+            moveAction = player.Move;
+
+            int collidedBoxIndex;
+            if (TryGetCollidedUnitIndex(player, box, out collidedBoxIndex))
             {
-                box[interactedBoxIndex].Move(inputDir);
-                pushOutUnits = ObjectManager.GetCollidedUnits(player, box, block, interactedBoxIndex) ;
+                box[collidedBoxIndex].Move(inputDir);
+                moveAction += box[collidedBoxIndex].Move;
+                if(IsBoxCollided(collidedBoxIndex))
+                {
+                    moveAction.Invoke(ObjectManager.GetReverseDir(inputDir));
+                }
             }
             else
             {
-                pushOutUnits = ObjectManager.GetCollidedUnits(player, block);
+                if (IsPlayerCollisidedToBlock() == true)
+                {
+                    moveAction.Invoke(ObjectManager.GetReverseDir(inputDir));
+                }
             }
             
-            if(pushOutUnits != null)
-            {
-                pushOutUnits.Invoke(ObjectManager.GetReverseDir(inputDir));
-            }
 
-            ObjectManager.PlayerInBlockCheck(player, block);
-            ObjectManager.ItemCollisionCheck(player, item);
-            ObjectManager.ButtonCollisionCheck(player, button, block);
+            BoxGoalCollisionCheck();
+            ItemCollisionCheck();
+            ButtonCollisionCheck();
 
-            if (ObjectManager.CheckAllBoxOnGoal(box, goal))
+            if(Box.IsAllBoxesOnGoal())
             {
-                if(StageManager.currentStage >= 3)
-                {
-                    break;
-                }
                 StageManager.NextStage();
-                
+            }
+            if(StageManager.currentStage > 3)
+            {
+                break;
             }
         }
 
@@ -72,74 +76,26 @@
             StageManager.ResetStage();
         }
 
-
         void Render()
         {
             Console.Clear();
 
-            DrawObject(player.positionX, player.positionY, player.playerIcon);
+            RenderUnit(player);
+            
+            RenderUnit(block);
+            RenderUnit(goal);
+            RenderUnit(box);
 
-            for (int i = 0; i < block.Length; i++)
-            {
-                if (block[i].isHidden)
-                {
-                    continue;
-                }
-                else if (block[i].isbreakable == false)
-                {
-                    DrawObject(block[i].positionX, block[i].positionY, block[i].unbreakIcon);
-                }
-                else if (block[i].isInPlayer)
-                {
-                    DrawObject(block[i].positionX, block[i].positionY, block[i].playerInIcon);
-                }
-                else
-                {
-                    DrawObject(block[i].positionX, block[i].positionY, block[i].Icon);
-                }
-            }
+            RenderUnit(item);
+            RenderUnit(button);
 
-            if(item != null)
+            void RenderUnit(params Unit[] units)
             {
-                if (!player.isGhost)
+                if (units == null) return;
+                foreach (Unit unit in units)
                 {
-                    DrawObject(item.positionX, item.positionY, item.itemIcon);
+                    unit.DrawIcon();
                 }
-            }
-
-            if(button != null)
-            {
-                if (button.isInteractable)
-                {
-                    DrawObject(button.positionX, button.positionY, button.itemIcon);
-                }
-            }
-
-            for (int i = 0; i < goal.Length; i++)
-            {
-                DrawObject(goal[i].positionX, goal[i].positionY, goal[i].Icon);
-            }
-
-            for (int i = 0; i < box.Length; i++)
-            {
-                for (int j = 0; j < goal.Length; j++)
-                {
-                    if (box[i].isOnGoal)
-                    {
-                        DrawObject(box[i].positionX, box[i].positionY, box[i].boxOnIcon);
-                        break;
-                    }
-                    else
-                    {
-                        DrawObject(box[i].positionX, box[i].positionY, box[i].Icon);
-                    }
-                }
-            }
-
-            static void DrawObject(int x, int y, string icon)
-            {
-                Console.SetCursorPosition(x, y);
-                Console.Write(icon);
             }
         }
 
@@ -150,7 +106,7 @@
             return key;
         }
 
-        Direction ConvertToDirection(ConsoleKey key)
+        Direction ConvertKeyToDirection(ConsoleKey key)
         {
             Direction dir;
 
@@ -178,5 +134,108 @@
             return dir;
         }
 
+        bool IsPlayerCollisidedToBlock()
+        {
+            for (int i = 0; i < block.Length; i++)
+            {
+                if (block[i].isCollided(player))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool IsBoxCollided(int movedBoxIndex)
+        {
+            for (int i = 0; i < block.Length; i++)
+            {
+                if (block[i].isCollided(box[movedBoxIndex]))
+                {
+                    return true;
+                }
+            }
+
+            for (int i = 0; i < box.Length; i++)
+            {
+                if (i == movedBoxIndex)
+                {
+                    continue;
+                }
+                if (box[i].isCollided(box[movedBoxIndex]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        void BoxGoalCollisionCheck()
+        {
+            for (int i = 0; i < box.Length; i++)
+            {
+                for (int j = 0; j < goal.Length; j++)
+                {
+                    if (box[i].isCollided(goal[j]))
+                    {
+                        box[i].SetBoxOnGoal(true);
+                        break;
+                    }
+                    else
+                    {
+                        box[i].SetBoxOnGoal(false);
+                    }
+
+                }
+            }
+        }
+
+        void ItemCollisionCheck()
+        {
+            for (int i = 0; i < item.Length; i++)
+            {
+                if (ObjectManager.UnitCollideCheck(player, item[i]))
+                {
+                    item[i].GivePlayerAbility(player);
+                }
+            }
+        }
+
+        void ButtonCollisionCheck()
+        {
+            for (int i = 0; i < button.Length; i++)
+            {
+                if (ObjectManager.UnitCollideCheck(player, button[i]))
+                {
+                    button[i].BreakRandomBlock(ref block);
+                }
+            }
+        }
+
+        //out을 사용해서 충돌했을 때의 index를 확정적으로 얻었을 때만 되도록 했는데 더 복잡해진 것 같음
+        bool TryGetCollidedUnitIndex(Unit unit, Unit[]? units, out int index)
+        {
+            if (units == null)
+            {
+                index = -1;
+                return false;
+            }
+
+            for (int i = 0; i < units.Length; i++)
+            {
+                if (ObjectManager.UnitCollideCheck(player, units[i]))
+                {
+                    index = i;
+                    return true;
+                }
+            }
+            index = -1;
+            return false;
+
+        }
     }
+
+
 }

@@ -1,17 +1,31 @@
-﻿class Box
+﻿class Box : Unit
 {
-    public int positionX { get; private set; }
-    public int positionY { get; private set; }
     public bool isOnGoal = false;
+    public string boxOnGoalIcon = "●";
 
-    public string Icon = "◎";
-    public string boxOnIcon = "●";
+    static int boxOnGoalCount = 0;
 
-    public Box(int x, int y)
+    public Box(int x, int y) : base(x, y, "◎")
     {
-        positionX = x;
-        positionY = y;
         isOnGoal = false;
+    }
+
+    public void SetBoxOnGoal(bool flag)
+    {
+        if(flag == isOnGoal)
+        {
+            return;
+        }
+        if(flag == true)
+        {
+            isOnGoal = true;
+            boxOnGoalCount++;
+        }
+        else
+        {
+            isOnGoal = false;
+            boxOnGoalCount--;
+        }
     }
 
     public void Move(Direction dir)
@@ -42,10 +56,10 @@
             positionY = 0;
         }
     }
-
-    public bool isCollide(int x, int y)
+    
+    public bool isCollided(Unit unit)
     {
-        if (x == positionX && y == positionY)
+        if(unit.positionX == positionX && unit.positionY == positionY)
         {
             return true;
         }
@@ -55,6 +69,28 @@
         }
     }
 
-    
+    public override void DrawIcon()
+    {
+        if (isOnGoal)
+        {
+            DrawIcon(boxOnGoalIcon);
+        }
+        else
+        {
+            base.DrawIcon();
+        }
+    }
+
+    public static bool IsAllBoxesOnGoal()
+    {
+        if(boxOnGoalCount == Goal.allGoalCount)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
 }

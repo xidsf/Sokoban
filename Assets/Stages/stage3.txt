@@ -1,0 +1,10 @@
+#########################
+# B              B  B  B#
+#BiB P          OuB  B B#
+# B     B  BBB   B    O #
+# BBBB BB  BBBB  BB BBB #
+#         O          B  #
+#B BBBBB  B B  GGB   B  #
+#B   BBB B  O BG  B  B  #
+#B          B BG        #
+#########################

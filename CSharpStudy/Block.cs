@@ -1,42 +1,72 @@
-﻿class Block
+﻿class Block : Unit
 {
     public static int breakableBlockCount = 0;
 
-    public readonly int positionX;
-    public readonly int positionY;
-
     public bool isInPlayer;
-    public bool isHidden;
+    public bool isBroken;
     public readonly bool isbreakable;
 
-    public string Icon = "□";
-    public string playerInIcon = "▣";
-    public string unbreakIcon = "■";
+    public string playerInIcon;
+    public string unbreakIcon;
 
-    public Block(int x, int y, bool breakable , bool isBroken = false)
+    public Block(int x, int y, bool breakable) : base(x, y, "□")
     {
         positionX = x;
         positionY = y;
         isbreakable = breakable;
-        this.isHidden = isBroken;
+        isBroken = false;
         isInPlayer = false;
 
-        if(isBroken == false && isbreakable == true)
+        playerInIcon = "▣";
+        unbreakIcon = "■";
+
+        if (isbreakable == true)
         {
             breakableBlockCount++;
         }
     }
 
-    public void ShowBlock()
+    public void BreakBlock()
     {
-        isHidden = false;
-        breakableBlockCount++;
+        isBroken = true;
+        breakableBlockCount--;
     }
 
-    public void HideBlock()
+    public bool isCollided(Unit unit)
     {
-        isHidden = true;
-        breakableBlockCount--;
+        if(isBroken == true)
+        {
+            return false;
+        }
+        if (unit.positionX == positionX && unit.positionY == positionY)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public override void DrawIcon()
+    {
+        if(isBroken == true)
+        {
+            return;
+        }
+        if(isbreakable == false)
+        {
+            DrawIcon(unbreakIcon);
+        }
+        else if(isInPlayer == true)
+        {
+            DrawIcon(playerInIcon);
+        }
+        else
+        {
+            base.DrawIcon();
+        }
+        
     }
 
 }

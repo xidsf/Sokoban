@@ -1,18 +1,12 @@
-﻿class Player
+﻿class Player : Unit
 {
-    public int positionX { get; private set; }
-    public int positionY { get; private set; }
-    public bool isGhost { get; private set; }
-    public Direction playerMoveDir { get; private set; }
-    public string playerIcon;
+    public bool isGhost { get; private set; }  = false;
+    public Direction playerMoveDir { get; private set; } = Direction.Right;
 
-    public Player(int x = 1, int y = 1)
+    public Player(int positionX, int positionY) : base(positionX, positionY, "▼")
     {
-        positionX = x;
-        positionY = y;
         isGhost = false;
         playerMoveDir = Direction.Right;
-        playerIcon = "▼";
     }
 
     public void Move(Direction dir)
@@ -47,35 +41,10 @@
             positionY = 0;
         }
     }
-    
-    public bool isCollide(int x, int y)
-    {
-        if(x == positionX && y == positionY)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
 
-    public bool isCollide(Box box)
-    {
-        if (box.positionX == positionX && box.positionY == positionY)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public void GetItme()
+    public void GetAbility()
     {
         isGhost = true;
     }
-
 
 }

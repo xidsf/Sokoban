@@ -1,25 +1,32 @@
-﻿class Item
-{
-    public readonly int positionX;
-    public readonly int positionY;
-    public bool isEatable;
-    public string itemIcon = "♪";
+﻿using System.Numerics;
 
-    public Item(int x, int y, bool isEatable = true)
+class Item : Unit
+{
+    public bool isEatable;
+
+    public Item(int x, int y, bool isEatable = true) : base(x, y, "♪")
     {
-        positionX = x;
-        positionY = y;
         this.isEatable = isEatable;
     }
 
-    public void MakePlayerGhost(Player player)
+
+    public void GivePlayerAbility(Player player)
     {
-        if(isEatable == false)
+        if (isEatable == false)
         {
             return;
         }
-        player.GetItme();
+        player.GetAbility();
         isEatable = false;
+    }
+
+    public override void DrawIcon()
+    {
+        if(isEatable == false) 
+        {
+            return; 
+        }
+        base.DrawIcon();
     }
 
 }

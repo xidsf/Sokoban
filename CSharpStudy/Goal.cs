@@ -1,12 +1,9 @@
-﻿class Goal
+﻿class Goal : Unit
 {
-    public readonly int positionX;
-    public readonly int positionY;
-    public string Icon = "○";
+    public static int allGoalCount = 0;
 
-    public Goal(int x, int y)
+    public Goal(int x, int y) : base(x, y, "○")
     {
-        positionX = x;
-        positionY = y;
+        allGoalCount++;
     }
 }

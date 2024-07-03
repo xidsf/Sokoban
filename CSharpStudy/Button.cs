@@ -1,10 +1,6 @@
-﻿class Button
+﻿class Button : Unit
 {
     public static int pressableCount = 5;
-
-    public readonly int positionX;
-    public readonly int positionY;
-    public string itemIcon = "◈";
     public bool isInteractable;
 
     int[] weightTable = { 10, 30, 60 };
@@ -13,18 +9,18 @@
 
     Random random = new Random();
 
-    public Button(int x, int y)
+    public Button(int x, int y) : base(x, y, "◈")
     {
-        positionX = x;
-        positionY = y;
         for (int i = 0; i < weightTable.Length; i++)
         {
             totalWeight += weightTable[i];
         }
         isInteractable = true;
+        if (StageManager.currentStage == 3) pressableCount = 10;
+        else pressableCount = 5;
     }
 
-    public void HideRandomBlock(Block[] blocks)
+    public void BreakRandomBlock(ref Block[] blocks)
     {
         if(isInteractable == false)
         {
@@ -41,7 +37,7 @@
         for (int i = 0; i < weightTable.Length; i++)
         {
             weight += weightTable[i];
-            if(weight >= randomNum)
+            if (weight >= randomNum)
             {
                 result = resultTable[i];
                 break;
@@ -52,17 +48,23 @@
         while(loopCount < result)
         {
             randomNum = random.Next(0, blocks.Length);
-            if (blocks[randomNum].isHidden == false && blocks[randomNum].isbreakable == true)
+            if (blocks[randomNum].isBroken == false && blocks[randomNum].isbreakable == true)
             {
-                blocks[randomNum].HideBlock();
+                blocks[randomNum].BreakBlock();
                 loopCount++;
             }
         }
 
         pressableCount--;
         if (pressableCount <= 0) isInteractable = false;
-
     }
 
-
+    public override void DrawIcon()
+    {
+        if(isInteractable == false)
+        {
+            return;
+        }
+        base.DrawIcon();
+    }
 }
